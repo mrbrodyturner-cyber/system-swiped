@@ -48,6 +48,20 @@
     worker.postMessage({ id, file, max: MAX });
   }
   const shrink = (file) => new Promise((resolve) => { queue.push({ file, resolve }); pump(); });
+  // capture time from the photo's EXIF ("YYYY:MM:DD HH:MM:SS", same text in JPEG and HEIC), read when you swipe left
+  const shotAt = new Map();   // key -> ms
+  async function readShotTime(k) {
+    if (shotAt.has(k)) return;
+    const f = files.get(k);
+    if (!f) return;
+    try {
+      const head = new Uint8Array(await f.slice(0, 262144).arrayBuffer());
+      let txt = '';
+      for (let i = 0; i < head.length; i++) { const c = head[i]; txt += c >= 32 && c < 127 ? String.fromCharCode(c) : ' '; }
+      const m = txt.match(/(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})/);
+      shotAt.set(k, m ? new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]).getTime() : f.lastModified);
+    } catch { shotAt.set(k, f.lastModified); }
+  }
   const nameOf = (k) => k.slice(k.indexOf(':') + 1);
   const extOf = (n) => { const i = n.lastIndexOf('.'); return i > 0 ? n.slice(i).toLowerCase() : ''; };
 
@@ -111,7 +125,7 @@
     },
     thumb: async () => null,
     async move(keys, dir) {
-      for (const k of keys) { decided.left.delete(k); decided.right.delete(k); decided[dir].set(k, files.get(k)); }
+      for (const k of keys) { decided.left.delete(k); decided.right.delete(k); decided[dir].set(k, files.get(k)); if (dir === 'left') readShotTime(k); }
       return keys.map((k) => ({ from: k, to: k }));
     },
     async undo(moves) {
@@ -125,7 +139,7 @@
     async loadProgress() { try { return JSON.parse(localStorage.getItem('ss-progress') || 'null'); } catch { return null; } },
     async saveProgress(d) { try { localStorage.setItem('ss-progress', JSON.stringify(d)); } catch {} return true; },
     _counts: () => ({ keep: decided.right.size, cut: decided.left.size }),
-    _rejects: () => [...decided.left.entries()].map(([k, f]) => ({ name: nameOf(k), t: f ? f.lastModified : 0 })),
+    _rejects: () => [...decided.left.entries()].map(([k, f]) => ({ name: nameOf(k), t: shotAt.get(k) || (f ? f.lastModified : 0) })),
     _reset() { for (const u of urls.values()) URL.revokeObjectURL(u); urls.clear(); files.clear(); decided.left.clear(); decided.right.clear(); },
   };
   // keep the installed app's data from being evicted

@@ -5,15 +5,17 @@
   // through a one-time "Swiped Delete" Shortcut (web apps can't delete from the library themselves).
   const SHORTCUT = 'Swiped-Delete';
   const genericName = (n) => /^(image|photo|img)(\s*\(\d+\))?\.\w+$/i.test(n) || /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(n);
+  const fmt2 = (n) => String(n).padStart(2, '0');
+  const stamp = (d) => `${d.getFullYear()}-${fmt2(d.getMonth() + 1)}-${fmt2(d.getDate())} ${fmt2(d.getHours())}:${fmt2(d.getMinutes())}:${fmt2(d.getSeconds())}`;
   function rejectPayload() {
     const list = api._rejects();
     const names = new Set();
     for (const { name } of list) { names.add(name); names.add(name.replace(/\.[^.]+$/, '')); }
-    const times = list.map((r) => r.t).filter((t) => t && t < Date.now() - 10 * 60000);
-    const from = times.length ? new Date(Math.min(...times) - 86400000) : new Date('2000-01-01T00:00:00');
-    const ymd = `${from.getFullYear()}-${String(from.getMonth() + 1).padStart(2, '0')}-${String(from.getDate()).padStart(2, '0')}`;
-    void ymd;
-    return { list, text: `|${[...names].join('|')}|` };
+    // only photos shot between the first and last reject (+/- 2 min) get checked, so it's fast
+    const times = list.map((r) => r.t).filter(Boolean);
+    const start = new Date((times.length ? Math.min(...times) : Date.now() - 86400000) - 120000);
+    const end = new Date((times.length ? Math.max(...times) : Date.now()) + 120000);
+    return { list, text: JSON.stringify({ start: stamp(start), end: stamp(end), names: `|${[...names].join('|')}|` }) };
   }
   const ready = () => { try { return localStorage.getItem('ss-delete-ready') === '1'; } catch { return false; } };
   function runDelete(force) {
@@ -63,7 +65,7 @@
   document.body.appendChild(guide);
   // hand the signed file straight to the Shortcuts app (a Safari download gets mislabeled as a web page)
   // official iCloud link: opens the Add Shortcut screen on any iPhone
-  const ICLOUD = 'https://www.icloud.com/shortcuts/04c98d7d54e24f7ebb321a440a9d0a3a';
+  const ICLOUD = 'https://www.icloud.com/shortcuts/90d591aa1ae547dbab69205d2a6bc330';
   guide.querySelector('#delGet').addEventListener('click', (e) => { e.preventDefault(); location.href = ICLOUD; });
   guide.querySelectorAll('[data-close-del]').forEach((b) => b.addEventListener('click', () => { guide.hidden = true; }));
   guide.querySelector('#delReady').addEventListener('click', () => {
@@ -104,7 +106,7 @@
   vidBtn.addEventListener('click', async () => { const keys = await api.pickVideos(); if (keys.length) load(keys); });
   $('#choose').after(vidBtn, tip, folderBtn);
   const ver = document.createElement('div');
-  ver.className = 'app-ver'; ver.textContent = 'System Swiped · build 11.8-1409';
+  ver.className = 'app-ver'; ver.textContent = 'System Swiped · build 11.8-1454';
   $('.dash').appendChild(ver);
 
   // name each batch by the date the photos were taken instead of a folder
