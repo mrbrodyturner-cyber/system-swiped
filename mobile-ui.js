@@ -59,7 +59,14 @@
     const standalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
     let seen = false;
     try { seen = localStorage.getItem('ss-install-guide') === '1'; } catch {}
-    if (standalone || seen) return;
+    const force = /[?&#]install\b/.test(location.href);   // ?install always shows it (for testing)
+    if (!force && (standalone || seen)) return;
+    // the brand picker waits until the guide is closed
+    window.__guideOpen = true;
+    const _openOnboard = openOnboard;
+    let onboardWanted = false;
+    openOnboard = function () { if (window.__guideOpen) { onboardWanted = true; $('#onboard').hidden = true; return; } _openOnboard(); };
+    if (!$('#onboard').hidden) { onboardWanted = true; $('#onboard').hidden = true; }
     const ua = navigator.userAgent;
     const iOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     const notSafari = /CriOS|FxiOS|EdgiOS|OPiOS|GSA\//.test(ua);
@@ -91,7 +98,11 @@
       <button class="ig-skip" id="igSkip">Just use it in the browser</button>
     </div>`;
     document.body.appendChild(el);
-    const done = () => { try { localStorage.setItem('ss-install-guide', '1'); } catch {} el.remove(); };
+    const done = () => {
+      try { localStorage.setItem('ss-install-guide', '1'); } catch {}
+      el.remove(); window.__guideOpen = false;
+      if (onboardWanted || !game.brands.length) openOnboard();
+    };
     el.querySelector('#igGo').addEventListener('click', done);
     el.querySelector('#igSkip').addEventListener('click', done);
     const copy = el.querySelector('#igCopy');
