@@ -27,6 +27,27 @@
       inp.click();
     });
   }
+  // ---- preview pipeline: one worker, one photo at a time, in the order they're needed ----
+  const MAX = Math.round(Math.min(2000, Math.max(screen.width, screen.height) * (window.devicePixelRatio || 2)));
+  let worker = null, wid = 0;
+  const waiting = new Map();
+  const queue = [];
+  let busy = false;
+  try {
+    worker = new Worker('preview-worker.js');
+    worker.onmessage = ({ data }) => { const w = waiting.get(data.id); waiting.delete(data.id); busy = false; if (w) w(data.blob || null); pump(); };
+    worker.onerror = () => { worker = null; for (const w of waiting.values()) w(null); waiting.clear(); busy = false; pump(); };
+  } catch { worker = null; }
+  function pump() {
+    if (busy || !queue.length) return;
+    const { file, resolve } = queue.shift();
+    if (!worker) { resolve(null); pump(); return; }
+    busy = true;
+    const id = ++wid;
+    waiting.set(id, resolve);
+    worker.postMessage({ id, file, max: MAX });
+  }
+  const shrink = (file) => new Promise((resolve) => { queue.push({ file, resolve }); pump(); });
   const nameOf = (k) => k.slice(k.indexOf(':') + 1);
   const extOf = (n) => { const i = n.lastIndexOf('.'); return i > 0 ? n.slice(i).toLowerCase() : ''; };
 
@@ -75,9 +96,17 @@
     async preview(k) {
       const f = files.get(k);
       if (!f) return { type: 'file' };
-      if (!urls.has(k)) urls.set(k, URL.createObjectURL(f));
-      if (VIDEO.test(f.name) || f.type.startsWith('video/')) return { type: 'video', url: urls.get(k) };
-      if (IMG.test(f.name) || f.type.startsWith('image/')) return { type: 'image', url: urls.get(k), orientation: 1 };
+      if (VIDEO.test(f.name) || f.type.startsWith('video/')) {
+        if (!urls.has(k)) urls.set(k, URL.createObjectURL(f));
+        return { type: 'video', url: urls.get(k) };
+      }
+      if (IMG.test(f.name) || f.type.startsWith('image/')) {
+        if (!urls.has(k)) {
+          const blob = await shrink(f);   // screen-sized copy, decoded off the main thread
+          urls.set(k, URL.createObjectURL(blob || f));
+        }
+        return { type: 'image', url: urls.get(k), orientation: 1 };
+      }
       return { type: 'file' };
     },
     thumb: async () => null,

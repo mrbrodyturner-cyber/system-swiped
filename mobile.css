@@ -101,3 +101,14 @@ body { padding-bottom: env(safe-area-inset-bottom); -webkit-tap-highlight-color:
 
 .choose-videos { width: 100%; padding: 11px; font-size: 14px; }
 .app-ver { text-align: center; font-family: var(--cond); text-transform: uppercase; letter-spacing: .1em; font-size: 10px; color: #444; padding: 6px 0 4px; }
+
+/* ---- swipe-screen performance on iPhone: no moving background, no full-screen glow repaints, no filters on big layers ---- */
+body[data-screen="swipe"] #bgLayer { animation: none !important; }
+.stage::before, .stage::after { display: none; }
+.card { box-shadow: 0 6px 16px rgba(0,0,0,.35); }
+.card.next { filter: none; }
+.card.next .media { opacity: .45; }
+.pop-t { filter: none; text-shadow: 0 2px 0 #000, 0 0 10px rgba(0,0,0,.8); }
+.pop.p-call .pop-t { filter: none; box-shadow: 0 4px 0 #000; }
+.pop::after { display: none; }
+.pop:not(.p-call) .pop-t { background: none !important; -webkit-background-clip: border-box; background-clip: border-box; color: inherit; -webkit-text-stroke: 1px #000; }

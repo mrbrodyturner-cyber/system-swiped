@@ -42,7 +42,7 @@
   vidBtn.addEventListener('click', async () => { const keys = await api.pickVideos(); if (keys.length) load(keys); });
   $('#choose').after(vidBtn, tip, folderBtn);
   const ver = document.createElement('div');
-  ver.className = 'app-ver'; ver.textContent = 'System Swiped · build 11.8-1258';
+  ver.className = 'app-ver'; ver.textContent = 'System Swiped · build 11.8-1306';
   $('.dash').appendChild(ver);
 
   // name each batch by the date the photos were taken instead of a folder
