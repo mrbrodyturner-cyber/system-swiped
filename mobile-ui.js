@@ -28,7 +28,7 @@
       <li>Tap <b>Choose photos…</b> → <b>Photo Library</b>, then open your album under <b>Collections</b>.</li>
       <li>Put your finger on the <b>first photo</b> and <b>slide sideways</b> across 1–2 photos. Don’t lift.</li>
       <li>Now <b>drag down</b>. Every photo you pass gets a checkmark. Hold at the bottom edge and it keeps selecting as it scrolls.</li>
-      <li>Lift your finger, tap <b>✓</b> (top right), and start swiping.</li>
+      <li>Lift your finger and tap <b>✓</b> (top right). With hundreds of photos, give iPhone a few seconds to hand them over.</li>
     </ol>
     <span class="pt-note">If it scrolls instead of selecting, you moved down too early. Start sideways first. (iPhone doesn’t give web apps a “Select All” button.)</span>`;
   // quick reminder the first few times the picker opens

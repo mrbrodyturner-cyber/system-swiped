@@ -50,7 +50,9 @@
   window.swiped = {
     platform: 'ios',
     pathFor: () => '',
-    pickFolder: () => pick('image/*,video/*'),
+    // Listing exact types (incl. HEIC) stops iOS from converting every photo to JPEG before handing them over,
+    // which is what made big selections hang after tapping the checkmark. Videos are left out for the same reason.
+    pickFolder: () => pick('image/heic,image/heif,image/jpeg,image/png,image/webp,image/gif,image/avif'),
     pickDir: () => pick('', true),
     async scan(keys, pair) {
       const groups = new Map();
