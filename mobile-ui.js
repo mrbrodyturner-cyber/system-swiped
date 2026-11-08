@@ -63,7 +63,7 @@
   document.body.appendChild(guide);
   // hand the signed file straight to the Shortcuts app (a Safari download gets mislabeled as a web page)
   // official iCloud link: opens the Add Shortcut screen on any iPhone
-  const ICLOUD = 'https://www.icloud.com/shortcuts/7d80bbb89c144b549f797981f56f8aa6';
+  const ICLOUD = 'https://www.icloud.com/shortcuts/04c98d7d54e24f7ebb321a440a9d0a3a';
   guide.querySelector('#delGet').addEventListener('click', (e) => { e.preventDefault(); location.href = ICLOUD; });
   guide.querySelectorAll('[data-close-del]').forEach((b) => b.addEventListener('click', () => { guide.hidden = true; }));
   guide.querySelector('#delReady').addEventListener('click', () => {
@@ -104,7 +104,7 @@
   vidBtn.addEventListener('click', async () => { const keys = await api.pickVideos(); if (keys.length) load(keys); });
   $('#choose').after(vidBtn, tip, folderBtn);
   const ver = document.createElement('div');
-  ver.className = 'app-ver'; ver.textContent = 'System Swiped · build 11.8-1358';
+  ver.className = 'app-ver'; ver.textContent = 'System Swiped · build 11.8-1409';
   $('.dash').appendChild(ver);
 
   // name each batch by the date the photos were taken instead of a folder
