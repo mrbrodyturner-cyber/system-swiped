@@ -1,0 +1,71 @@
+/* iPhone layout overrides (loaded after styles.css) */
+html, body { height: 100%; overscroll-behavior: none; }
+body { padding-bottom: env(safe-area-inset-bottom); -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
+.bar { gap: 10px; padding: max(8px, env(safe-area-inset-top)) 12px 8px; flex-wrap: wrap; }
+.brand .logo { width: 24px; height: 24px; }
+.wordmark { font-size: 17px; }
+.stats { order: 3; width: 100%; justify-content: space-around; margin: 0; }
+.stat { padding: 0 8px; font-size: 9px; }
+.stat b { font-size: 18px; }
+#newBatch { padding: 5px 9px; font-size: 11px; }
+.xp-btn { padding: 4px 9px; margin-left: auto; }
+.xp-btn b { font-size: 15px; }
+.progress { padding: 5px 12px; gap: 8px; font-size: 10px; }
+.progress .pb-xp { display: none; }
+.hints { display: none; }
+#swipe { padding: 8px 8px 10px; }
+.controls { gap: 18px; margin-top: 10px; }
+.round { width: 64px; height: 64px; }
+.round.undo { width: 46px; height: 46px; }
+.meta { padding: 8px 12px; }
+.meta .name { font-size: 14px; }
+.meta .info { font-size: 11px; gap: 8px; }
+.stamp { font-size: 30px; }
+
+#home { padding: 12px 12px 30px; -webkit-overflow-scrolling: touch; }
+.dash { gap: 12px; }
+.player-card { flex-wrap: wrap; gap: 10px; padding: 12px; }
+.pc-emblem { width: 52px; height: 52px; }
+.pc-emblem b { font-size: 24px; }
+.pc-main { flex: 1 1 calc(100% - 70px); }
+.pc-rank { font-size: 22px; }
+.pc-chip { flex: 1; min-width: 0; padding: 6px 8px; }
+.pc-chip b { font-size: 18px; }
+.pot { flex-direction: column; text-align: center; padding: 18px 16px; gap: 12px; }
+.pot h1 { font-size: 22px; }
+.pot p { font-size: 13px; }
+.pot .primary { width: 100%; padding: 14px; font-size: 17px; }
+.toggle { font-size: 12px; text-align: left; }
+.dash-top, .dash-mid { grid-template-columns: 1fr; gap: 12px; }
+.rig-card { grid-template-columns: 1fr; min-height: 0; padding: 12px; text-align: center; }
+.rig-art .rig-img, .rig-art .rig-svg { height: 220px; }
+.rig-info h2 { font-size: 26px; }
+.shop-card { grid-template-columns: 1fr 110px; }
+.teaser-art .rig-svg, .teaser-art img { width: 110px; height: 80px; }
+.records { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.rec { padding: 8px; }
+.rec b { font-size: 18px; }
+
+.modal { padding: max(10px, env(safe-area-inset-top)) 8px 10px; align-items: start; }
+.modal-box { padding: 14px; max-height: calc(100dvh - 20px); -webkit-overflow-scrolling: touch; }
+.modal-box h2 { font-size: 22px; }
+.shop-head { flex-wrap: wrap; gap: 8px; }
+.shop-bal { margin-left: 0; }
+.shop-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.shop-grid.t-brands, .brand-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.onboard-box h2 { font-size: 30px; }
+.bc-art .rig-img, .bc-art .rig-svg { height: 110px; }
+.bc-name { font-size: 20px; }
+.rig-layout { grid-template-columns: 1fr; }
+.rig-big { height: 46dvh; }
+.stat-bars { grid-template-columns: 1fr; }
+.slot-row { grid-template-columns: 90px 1fr auto; font-size: 12px; }
+.slot-row small { display: none; }
+.hall-grid { grid-template-columns: 1fr; }
+.done-box { padding: 20px 14px; }
+.done-box .row { flex-direction: column; gap: 8px; }
+.done-box .row button { width: 100%; padding: 13px; }
+
+.pop-t { font-size: 34px; }
+.pop.at-top .pop-t, .pop.at-meta .pop-t { font-size: 22px; }
+.splash-center { font-size: 22px; max-width: 92vw; white-space: normal; text-align: center; }

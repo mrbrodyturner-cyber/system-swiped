@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Swiped">
+  <meta name="theme-color" content="#000000">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; worker-src 'self'">
+  <title>System Swiped</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="mobile.css">
+</head>
+<body data-screen="home">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <linearGradient id="rg-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3e3d"/><stop offset=".18" stop-color="#232625"/><stop offset="1" stop-color="#121413"/></linearGradient>
+    <linearGradient id="rg-grip" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#101111"/><stop offset=".5" stop-color="#1d1f1f"/><stop offset="1" stop-color="#0d0e0e"/></linearGradient>
+    <linearGradient id="rg-metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a605e"/><stop offset="1" stop-color="#262a29"/></linearGradient>
+    <linearGradient id="rg-batt" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#151716"/><stop offset="1" stop-color="#2c302f"/></linearGradient>
+    <linearGradient id="rg-wood" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5e3517"/><stop offset=".45" stop-color="#9a6332"/><stop offset="1" stop-color="#6a3c1a"/></linearGradient>
+    <radialGradient id="rg-lens" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#2f3332"/><stop offset="1" stop-color="#0f1110"/></radialGradient>
+    <radialGradient id="rg-white" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#f2f4f2"/><stop offset="1" stop-color="#b9bebb"/></radialGradient>
+    <radialGradient id="rg-glass" cx=".45" cy=".4" r=".7"><stop offset="0" stop-color="#2b2f55"/><stop offset=".55" stop-color="#121427"/><stop offset=".85" stop-color="#1d3a33"/><stop offset="1" stop-color="#050507"/></radialGradient>
+    <linearGradient id="rg-lens-b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3c4140"/><stop offset=".35" stop-color="#1e2120"/><stop offset="1" stop-color="#0b0c0c"/></linearGradient>
+    <linearGradient id="rg-lens-w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f6f4"/><stop offset=".4" stop-color="#d4d8d5"/><stop offset="1" stop-color="#8f9592"/></linearGradient>
+    <linearGradient id="rg-screen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5d86b0"/><stop offset=".6" stop-color="#9cc0d6"/><stop offset="1" stop-color="#2a6a46"/></linearGradient>
+  </defs></svg>
+  <header class="bar">
+    <div class="brand"><img class="logo" src="logo.png" alt=""><span class="wordmark">System <em>Swiped</em></span></div>
+    <div class="stats" id="stats" hidden>
+      <span class="stat"><b id="statLeft">0</b> to go</span>
+      <span class="stat s-save"><b id="statSaved">0</b> selected</span>
+      <span class="stat s-del"><b id="statDeleted">0</b> deleted</span>
+    </div>
+    <button id="newBatch" class="ghost small" hidden>New batch</button>
+    <button id="shopBtn" class="xp-btn" title="Spend XP on backgrounds"><b id="xpTotal">0</b><span>XP</span><i>Shop</i></button>
+  </header>
+  <div class="progress" id="projBar">
+    <span class="pb-label"><b id="pbPct">0%</b> project sorted <span id="pbCount"></span></span>
+    <div class="pb-track" aria-hidden="true"><div id="progressFill"></div></div>
+    <span class="pb-xp">+<b id="pbXp">0</b> XP this session</span>
+  </div>
+
+  <main>
+    <div id="bgLayer"></div>
+    <aside id="rigPanel" class="side-panel left" title="View rig stats"></aside>
+    <aside id="hallPanel" class="side-panel right"></aside>
+
+    <section id="home" class="screen">
+      <div class="dash">
+        <div id="playerCard" class="player-card"></div>
+        <div id="pot" class="pot">
+          <div class="pot-rim">
+            <svg viewBox="0 0 48 48" width="34" height="34" aria-hidden="true"><path d="M24 6v24m-9-9 9 9 9-9M8 34v6h32v-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="pot-text">
+            <span class="eyebrow">New System Swiped project</span>
+            <h1>Pick photos to cull</h1>
+            <p>Choose from Photos or Files (an SD card reader works too). Swipe left to <b class="t-del">cut</b> (+2 XP), right to <b class="t-save">keep</b> (+1 XP). When you finish, save your keepers to Photos in one tap.</p>
+          </div>
+          <button id="choose" class="primary">Choose folder…</button>
+        </div>
+        <label class="toggle"><input type="checkbox" id="pair" checked> Keep files with the same name together (RAW + JPEG + XMP move as one)</label>
+        <div class="dash-top">
+          <button id="rigCard" class="rig-card">
+            <div class="rig-art" id="homeRig"></div>
+            <div class="rig-info">
+              <span class="eyebrow">Locker</span>
+              <h2 id="rigTitle">Build a rig</h2>
+              <p id="rigSub"></p>
+              <span class="link">View rig stats →</span>
+            </div>
+          </button>
+          <div class="dash-side">
+            <button id="shopCard" class="shop-card">
+              <div class="shop-card-txt">
+                <span class="eyebrow">Pro Shop · next unlock</span>
+                <div id="nextGoal" class="next-goal"></div>
+              </div>
+              <div id="teaser" class="teaser"></div>
+            </button>
+            <div id="homeHall" class="hall-mini"></div>
+          </div>
+        </div>
+        <div class="dash-mid">
+          <div id="challenges" class="dash-panel"></div>
+          <div id="recent" class="dash-panel"></div>
+        </div>
+        <div id="records" class="records"></div>
+      </div>
+    </section>
+
+    <section id="swipe" class="screen" hidden>
+      <div id="stage" class="stage"></div>
+      <div class="controls">
+        <button id="btnDel" class="round del" title="Delete (←)" aria-label="Delete">
+          <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+        </button>
+        <button id="btnUndo" class="round undo" title="Undo (↑ or Z, last 5)" aria-label="Undo">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button id="btnSave" class="round save" title="Select (→)" aria-label="Select">
+          <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M5 12.5 10 17.5 19.5 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <p class="hints"><kbd>←</kbd> delete <kbd>→</kbd> select <kbd>↑</kbd> undo (last 5) <span class="hint-dot"></span> looks like one you selected <kbd>Space</kbd> play video <kbd>M</kbd> sound</p>
+    </section>
+
+    <section id="done" class="screen" hidden>
+      <div class="done-box">
+        <h1>Batch cleared.</h1>
+        <p id="summary"></p>
+        <div class="row">
+          <button id="openSave" class="primary">Open Selected folder</button>
+          <button id="openDelete" class="ghost">Open Delete folder</button>
+        </div>
+        <div class="row">
+          <button id="trashDelete" class="ghost danger">Move Delete folder to Trash</button>
+          <button id="undoLast" class="ghost">Undo last swipe</button>
+          <button id="again" class="ghost">Swipe a new batch</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="onboard" class="modal" hidden>
+    <div class="modal-box onboard-box" role="dialog" aria-label="Choose your brand">
+      <span class="eyebrow">Welcome to System Swiped</span>
+      <h2>Choose your path</h2>
+      <p class="shop-sub">Every photo you sort earns XP (2 XP = $1). Spend it on real bodies, lenses and rig gear from your brand. You start with an entry body and kit lens. A second brand unlocks at 10,000 XP.</p>
+      <div id="onboardGrid" class="brand-grid"></div>
+    </div>
+  </div>
+
+  <div id="rigModal" class="modal" hidden>
+    <div class="modal-box rig-box" role="dialog" aria-label="Your rig">
+      <div class="shop-head"><h2>Your rig</h2><button id="rigToShop" class="primary small">Upgrade in shop</button><button class="ghost small" data-close>Close</button></div>
+      <div class="rig-layout">
+        <div class="rig-big-wrap"><div id="rigBig" class="rig-big"></div><span class="rig-hint">Drag to rotate · scroll to zoom</span></div>
+        <div>
+          <div id="rigStats" class="rig-stats"></div>
+          <div id="rigSlots" class="rig-slots"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="shop" class="modal" hidden>
+    <div class="modal-box shop-box" role="dialog" aria-label="Pro Shop">
+      <div class="shop-head">
+        <h2>Pro Shop</h2>
+        <div class="shop-tabs"><button data-tab="gear">Gear</button><button data-tab="bg">Backgrounds</button><button data-tab="brands">Brands</button></div>
+        <span class="shop-bal"><b id="shopXp">0</b> XP</span>
+        <button class="ghost small" data-close>Close</button>
+      </div>
+      <div id="shopSub" class="shop-sub-tabs"></div>
+      <div id="shopGrid" class="shop-grid"></div>
+    </div>
+  </div>
+
+  <div id="hallModal" class="modal" hidden>
+    <div class="modal-box hall-box" role="dialog" aria-label="Hall of History">
+      <div class="shop-head"><h2>Hall of History</h2><span class="shop-bal"><b id="hallCount"></b> earned</span><button class="ghost small" data-close>Close</button></div>
+      <p class="shop-sub">25 badge families with 12 tiers each. The last tiers take months or years. Hover a badge to see what it takes.</p>
+      <div id="hallGrid" class="hall-grid"></div>
+    </div>
+  </div>
+
+  <div id="crateModal" class="modal crate-modal" hidden>
+    <div class="crate-stage" role="dialog" aria-label="Gear crate">
+      <div class="crate"><div class="crate-lid"></div><div class="crate-box"><span>SYSTEM SWIPED</span></div><div class="crate-burst"></div></div>
+      <div class="crate-reveal"><span class="eyebrow">Gear crate</span><h2 id="crateTitle"></h2><p id="crateSub"></p><button class="primary" data-close>Nice</button></div>
+    </div>
+  </div>
+
+  <div id="loading" class="loading" hidden>Reading files…</div>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script src="mobile-shim.js"></script>
+  <script src="renderer.js"></script>
+  <script src="game.js"></script>
+  <script src="career.js"></script>
+  <script src="mobile-ui.js"></script>
+  <script type="module" src="rig3d.js"></script>
+</body>
+</html>
