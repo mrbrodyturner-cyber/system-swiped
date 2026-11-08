@@ -93,3 +93,8 @@ body { padding-bottom: env(safe-area-inset-bottom); -webkit-tap-highlight-color:
 .choose-folder { width: 100%; padding: 12px; font-size: 14px; }
 .pick-tip { font-size: 12px !important; color: var(--muted); text-align: left; background: #0d0f0e; border: 1px solid #1e2120; border-radius: 8px; padding: 10px 12px; margin: 0 !important; }
 .pick-tip b { color: var(--ink); }
+
+.pick-tip .pt-h { display: block; font-family: var(--cond); text-transform: uppercase; font-style: italic; font-weight: 800; font-size: 14px; letter-spacing: .03em; color: var(--green-hi); margin-bottom: 6px; }
+.pick-tip ol { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; font-size: 13px; color: var(--ink); line-height: 1.4; }
+.pick-tip .pt-note { display: block; margin-top: 8px; font-size: 11px; color: var(--muted); }
+.choose-folder { font-size: 12px; padding: 9px; opacity: .8; }

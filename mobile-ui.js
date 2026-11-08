@@ -16,15 +16,27 @@
   // batch helpers: a whole-folder picker (Files app / SD card) and the drag-select tip for Apple's photo picker
   const pot = $('#pot');
   const folderBtn = document.createElement('button');
-  folderBtn.className = 'ghost choose-folder'; folderBtn.textContent = 'Choose a whole folder (Files / SD card)';
+  folderBtn.className = 'ghost choose-folder'; folderBtn.textContent = 'Or load a folder from Files / SD card';
   folderBtn.addEventListener('click', async () => {
     const keys = await api.pickDir();
     if (keys.length) load(keys); else toast('No photos found. On older iOS, pick the folder’s photos with Choose photos → Choose Files → Select.');
   });
-  const tip = document.createElement('p');
+  const tip = document.createElement('div');
   tip.className = 'pick-tip';
-  tip.innerHTML = '<b>Batch tip:</b> in the photo picker, tap one photo and <b>drag your finger across the rows</b> without lifting. It selects everything you pass over, hundreds in seconds. Works inside albums under Collections too.';
-  $('#choose').after(folderBtn, tip);
+  tip.innerHTML = `<b class="pt-h">How to select a whole album fast</b>
+    <ol>
+      <li>Tap <b>Choose photos…</b> → <b>Photo Library</b>, then open your album under <b>Collections</b>.</li>
+      <li>Put your finger on the <b>first photo</b> and <b>slide sideways</b> across 1–2 photos. Don’t lift.</li>
+      <li>Now <b>drag down</b>. Every photo you pass gets a checkmark. Hold at the bottom edge and it keeps selecting as it scrolls.</li>
+      <li>Lift your finger, tap <b>✓</b> (top right), and start swiping.</li>
+    </ol>
+    <span class="pt-note">If it scrolls instead of selecting, you moved down too early. Start sideways first. (iPhone doesn’t give web apps a “Select All” button.)</span>`;
+  // quick reminder the first few times the picker opens
+  $('#choose').addEventListener('click', () => {
+    let n = 0; try { n = +localStorage.getItem('ss-pick-hint') || 0; localStorage.setItem('ss-pick-hint', n + 1); } catch {}
+    if (n < 3) toast('Tip: touch a photo, slide sideways, then drag down to select many at once');
+  }, true);
+  $('#choose').after(tip, folderBtn);
 
   // name each batch by the date the photos were taken instead of a folder
   const _scan = api.scan;
