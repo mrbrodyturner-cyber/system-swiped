@@ -14,7 +14,9 @@
     const ymd = `${from.getFullYear()}-${String(from.getMonth() + 1).padStart(2, '0')}-${String(from.getDate()).padStart(2, '0')}`;
     return { list, text: JSON.stringify({ names: `|${[...names].join('|')}|`, from: ymd, count: list.length }) };
   }
-  function runDelete() {
+  const ready = () => { try { return localStorage.getItem('ss-delete-ready') === '1'; } catch { return false; } };
+  function runDelete(force) {
+    if (!ready() && force !== true) { $('#delGuide').hidden = false; return; }   // shortcut has to exist first
     const { list, text } = rejectPayload();
     if (!list.length) { toast('No rejects in this batch'); return; }
     const generic = list.filter((r) => genericName(r.name)).length;
@@ -48,7 +50,7 @@
     <div class="shop-head"><h2>Set up “Delete rejects”</h2><button class="ghost small" data-close-del>Close</button></div>
     <p class="shop-sub">iPhone doesn’t let web apps delete photos, but its <b>Shortcuts</b> app can. Build this once and the Delete button sends your rejects to <b>Recently Deleted</b> (you can still recover them for 30 days). <b>Experimental:</b> it matches photos by file name.</p>
     <ol class="del-steps">
-      <li>Open the <b>Shortcuts</b> app, tap <b>+</b>, and name it exactly <code>Swiped Delete</code>.</li>
+      <li>Open the <b>Shortcuts</b> app, tap <b>+</b>, then tap the name at the top and rename it to exactly <code>Swiped Delete</code> (capital S and D, one space). If the name doesn’t match, Shortcuts says “Could not find the shortcut”.</li>
       <li>Add <b>Get Dictionary from Input</b>. It uses <i>Shortcut Input</i> automatically.</li>
       <li>Add <b>Get Dictionary Value</b> and set the key to <code>names</code>.</li>
       <li>Add another <b>Get Dictionary Value</b>, key <code>from</code>. Tap its blue input and pick <b>Dictionary</b> (from step 2).</li>
@@ -62,10 +64,16 @@
       <li>Done. The first run asks for Photos access: tap <b>Allow</b>. Every run asks you to confirm the delete.</li>
     </ol>
     <p class="shop-sub">After that, just tap <b>Delete rejects</b> at the end of a batch. Shortcuts opens, deletes, and you swipe back to Swiped.</p>
-    <button class="primary del-done" data-close-del>Got it</button>
+    <button class="primary del-done" id="delReady">I built it, delete now</button>
+    <button class="ig-skip" data-close-del>Not now</button>
   </div>`;
   document.body.appendChild(guide);
   guide.querySelectorAll('[data-close-del]').forEach((b) => b.addEventListener('click', () => { guide.hidden = true; }));
+  guide.querySelector('#delReady').addEventListener('click', () => {
+    try { localStorage.setItem('ss-delete-ready', '1'); } catch {}
+    guide.hidden = true;
+    if (state.deleted) runDelete(true); else toast('Saved. The Delete button will run the shortcut from now on.');
+  });
   guide.addEventListener('click', (e) => { if (e.target === guide) guide.hidden = true; });
   $('#trashDelete').hidden = true;
   $('#again').textContent = 'Pick more photos';
@@ -99,7 +107,7 @@
   vidBtn.addEventListener('click', async () => { const keys = await api.pickVideos(); if (keys.length) load(keys); });
   $('#choose').after(vidBtn, tip, folderBtn);
   const ver = document.createElement('div');
-  ver.className = 'app-ver'; ver.textContent = 'System Swiped · build 11.8-1321';
+  ver.className = 'app-ver'; ver.textContent = 'System Swiped · build 11.8-1325';
   $('.dash').appendChild(ver);
 
   // name each batch by the date the photos were taken instead of a folder
