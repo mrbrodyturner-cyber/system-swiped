@@ -1,15 +1,72 @@
 'use strict';
 /* iPhone-specific UI tweaks, loaded after career.js. */
 (function () {
-  // Done screen: saving goes through the share sheet, deleting from Photos stays manual (iOS rule)
+  // Done screen: your originals never leave Photos, so nothing needs saving. Rejects go to Recently Deleted
+  // through a one-time "Swiped Delete" Shortcut (web apps can't delete from the library themselves).
+  const SHORTCUT = 'Swiped Delete';
+  const genericName = (n) => /^(image|photo|img)(\s*\(\d+\))?\.\w+$/i.test(n) || /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(n);
+  function rejectPayload() {
+    const list = api._rejects();
+    const names = new Set();
+    for (const { name } of list) { names.add(name); names.add(name.replace(/\.[^.]+$/, '')); }
+    const times = list.map((r) => r.t).filter((t) => t && t < Date.now() - 10 * 60000);
+    const from = times.length ? new Date(Math.min(...times) - 86400000) : new Date('2000-01-01T00:00:00');
+    const ymd = `${from.getFullYear()}-${String(from.getMonth() + 1).padStart(2, '0')}-${String(from.getDate()).padStart(2, '0')}`;
+    return { list, text: JSON.stringify({ names: `|${[...names].join('|')}|`, from: ymd, count: list.length }) };
+  }
+  function runDelete() {
+    const { list, text } = rejectPayload();
+    if (!list.length) { toast('No rejects in this batch'); return; }
+    const generic = list.filter((r) => genericName(r.name)).length;
+    if (generic > list.length / 2) {
+      toast('Your iPhone gave these photos generic names, so the Shortcut can’t match them. Delete them in Photos instead.');
+      return;
+    }
+    try { localStorage.setItem('ss-delete-tried', '1'); } catch {}
+    location.href = `shortcuts://run-shortcut?name=${encodeURIComponent(SHORTCUT)}&input=text&text=${encodeURIComponent(text)}`;
+  }
+  const swap = (sel) => { const old = $(sel), n = old.cloneNode(true); old.replaceWith(n); return n; };   // drop the desktop click handlers
+  const delBtn = swap('#openSave'), setupBtn = swap('#openDelete');
+  delBtn.textContent = 'Delete rejects';
+  setupBtn.textContent = 'Set up the Delete shortcut';
+  delBtn.addEventListener('click', runDelete);
+  setupBtn.addEventListener('click', () => { $('#delGuide').hidden = false; });
   const _finish = finish;
   finish = function () {
     _finish();
-    const keep = state.saved, cut = state.deleted;   // counts update instantly; file records catch up a moment later
-    $('#summary').textContent = `${keep} keeper${keep === 1 ? '' : 's'} and ${cut} reject${cut === 1 ? '' : 's'}. Tap Save keepers, then “Save Images” to put them in Photos (or “Save to Files”). iPhone doesn’t let apps delete from your library, so remove rejects in Photos when you’re ready.`;
+    const keep = state.saved, cut = state.deleted;
+    delBtn.textContent = cut ? `Delete ${cut} reject${cut === 1 ? '' : 's'}` : 'No rejects';
+    delBtn.disabled = !cut;
+    let tried = false; try { tried = localStorage.getItem('ss-delete-tried') === '1'; } catch {}
+    $('#summary').textContent = `${keep} kept, ${cut} cut. Your keepers are already in Photos, nothing to save. ` +
+      (cut ? `Tap Delete to move the ${cut} reject${cut === 1 ? '' : 's'} to Recently Deleted (iPhone asks you to confirm).${tried ? '' : ' First time? Set up the Delete shortcut once (2 minutes).'}` : '');
   };
-  $('#openSave').textContent = 'Save keepers';
-  $('#openDelete').textContent = 'Share rejects';
+  // one-time setup guide for the Shortcut
+  const guide = document.createElement('div');
+  guide.id = 'delGuide'; guide.className = 'modal'; guide.hidden = true;
+  guide.innerHTML = `<div class="modal-box del-box">
+    <div class="shop-head"><h2>Set up “Delete rejects”</h2><button class="ghost small" data-close-del>Close</button></div>
+    <p class="shop-sub">iPhone doesn’t let web apps delete photos, but its <b>Shortcuts</b> app can. Build this once and the Delete button sends your rejects to <b>Recently Deleted</b> (you can still recover them for 30 days). <b>Experimental:</b> it matches photos by file name.</p>
+    <ol class="del-steps">
+      <li>Open the <b>Shortcuts</b> app, tap <b>+</b>, and name it exactly <code>Swiped Delete</code>.</li>
+      <li>Add <b>Get Dictionary from Input</b>. It uses <i>Shortcut Input</i> automatically.</li>
+      <li>Add <b>Get Dictionary Value</b> and set the key to <code>names</code>.</li>
+      <li>Add another <b>Get Dictionary Value</b>, key <code>from</code>. Tap its blue input and pick <b>Dictionary</b> (from step 2).</li>
+      <li>Add <b>Find Photos</b> → <b>Add Filter</b> → <b>Creation Date</b> → <b>is after</b> → pick the <code>from</code> value.</li>
+      <li>Add <b>Repeat with Each</b> and set it to <b>Photos</b>.</li>
+      <li>Inside the repeat, add <b>Get Name</b> (of <i>Repeat Item</i>).</li>
+      <li>Add <b>Text</b> and type <code>|</code>, insert the <b>Name</b> variable, then type <code>|</code> again (no spaces).</li>
+      <li>Add <b>If</b>: pick the <code>names</code> value → <b>contains</b> → the <b>Text</b> from step 8.</li>
+      <li>Inside the If, add <b>Add to Variable</b>: input <i>Repeat Item</i>, variable name <code>Rejects</code>.</li>
+      <li>Below <b>End Repeat</b>, add <b>Delete Photos</b> and set it to <code>Rejects</code>.</li>
+      <li>Done. The first run asks for Photos access: tap <b>Allow</b>. Every run asks you to confirm the delete.</li>
+    </ol>
+    <p class="shop-sub">After that, just tap <b>Delete rejects</b> at the end of a batch. Shortcuts opens, deletes, and you swipe back to Swiped.</p>
+    <button class="primary del-done" data-close-del>Got it</button>
+  </div>`;
+  document.body.appendChild(guide);
+  guide.querySelectorAll('[data-close-del]').forEach((b) => b.addEventListener('click', () => { guide.hidden = true; }));
+  guide.addEventListener('click', (e) => { if (e.target === guide) guide.hidden = true; });
   $('#trashDelete').hidden = true;
   $('#again').textContent = 'Pick more photos';
   $('#choose').textContent = 'Choose photos…';
@@ -42,7 +99,7 @@
   vidBtn.addEventListener('click', async () => { const keys = await api.pickVideos(); if (keys.length) load(keys); });
   $('#choose').after(vidBtn, tip, folderBtn);
   const ver = document.createElement('div');
-  ver.className = 'app-ver'; ver.textContent = 'System Swiped · build 11.8-1306';
+  ver.className = 'app-ver'; ver.textContent = 'System Swiped · build 11.8-1321';
   $('.dash').appendChild(ver);
 
   // name each batch by the date the photos were taken instead of a folder

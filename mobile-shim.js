@@ -125,6 +125,7 @@
     async loadProgress() { try { return JSON.parse(localStorage.getItem('ss-progress') || 'null'); } catch { return null; } },
     async saveProgress(d) { try { localStorage.setItem('ss-progress', JSON.stringify(d)); } catch {} return true; },
     _counts: () => ({ keep: decided.right.size, cut: decided.left.size }),
+    _rejects: () => [...decided.left.entries()].map(([k, f]) => ({ name: nameOf(k), t: f ? f.lastModified : 0 })),
     _reset() { for (const u of urls.values()) URL.revokeObjectURL(u); urls.clear(); files.clear(); decided.left.clear(); decided.right.clear(); },
   };
   // keep the installed app's data from being evicted

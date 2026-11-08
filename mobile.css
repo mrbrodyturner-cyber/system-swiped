@@ -112,3 +112,9 @@ body[data-screen="swipe"] #bgLayer { animation: none !important; }
 .pop.p-call .pop-t { filter: none; box-shadow: 0 4px 0 #000; }
 .pop::after { display: none; }
 .pop:not(.p-call) .pop-t { background: none !important; -webkit-background-clip: border-box; background-clip: border-box; color: inherit; -webkit-text-stroke: 1px #000; }
+
+.del-box { width: min(560px, 100%); }
+.del-steps { margin: 0 0 12px; padding-left: 20px; display: flex; flex-direction: column; gap: 7px; font-size: 13px; line-height: 1.45; }
+.del-steps code, .del-box code { background: #0d0f0e; border: 1px solid #262928; border-radius: 4px; padding: 0 5px; font-size: 12px; color: #9fd8bd; }
+.del-done { width: 100%; padding: 13px; }
+#openSave:disabled { opacity: .5; }
