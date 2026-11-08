@@ -13,6 +13,18 @@
   $('#trashDelete').hidden = true;
   $('#again').textContent = 'Pick more photos';
   $('#choose').textContent = 'Choose photos…';
+  // batch helpers: a whole-folder picker (Files app / SD card) and the drag-select tip for Apple's photo picker
+  const pot = $('#pot');
+  const folderBtn = document.createElement('button');
+  folderBtn.className = 'ghost choose-folder'; folderBtn.textContent = 'Choose a whole folder (Files / SD card)';
+  folderBtn.addEventListener('click', async () => {
+    const keys = await api.pickDir();
+    if (keys.length) load(keys); else toast('No photos found. On older iOS, pick the folder’s photos with Choose photos → Choose Files → Select.');
+  });
+  const tip = document.createElement('p');
+  tip.className = 'pick-tip';
+  tip.innerHTML = '<b>Batch tip:</b> in the photo picker, tap one photo and <b>drag your finger across the rows</b> without lifting. It selects everything you pass over, hundreds in seconds. Works inside albums under Collections too.';
+  $('#choose').after(folderBtn, tip);
 
   // name each batch by the date the photos were taken instead of a folder
   const _scan = api.scan;

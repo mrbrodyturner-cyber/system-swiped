@@ -11,13 +11,14 @@
   const VIDEO = /\.(mp4|mov|m4v|webm)$/i;
   const IMG = /\.(jpe?g|png|gif|webp|heic|heif|avif|bmp)$/i;
 
-  function pick(accept) {
+  function pick(accept, folder) {
     return new Promise((resolve) => {
       const inp = document.createElement('input');
       inp.type = 'file'; inp.multiple = true; inp.accept = accept;
+      if (folder) { inp.webkitdirectory = true; inp.removeAttribute('accept'); }
       inp.style.display = 'none';
       inp.addEventListener('change', () => {
-        const list = [...(inp.files || [])];
+        const list = [...(inp.files || [])].filter((f) => !folder || IMG.test(f.name) || VIDEO.test(f.name) || /^(image|video)\//.test(f.type));
         inp.remove();
         resolve(list.map((f) => { const k = `f${++seq}:${f.name}`; files.set(k, f); return k; }));
       }, { once: true });
@@ -50,6 +51,7 @@
     platform: 'ios',
     pathFor: () => '',
     pickFolder: () => pick('image/*,video/*'),
+    pickDir: () => pick('', true),
     async scan(keys, pair) {
       const groups = new Map();
       for (const k of keys) {
