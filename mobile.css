@@ -122,3 +122,8 @@ body[data-screen="swipe"] #bgLayer { animation: none !important; }
 .del-steps.big { font-size: 14px; gap: 10px; }
 .del-get { display: block; text-align: center; text-decoration: none; padding: 14px; font-size: 17px; margin-bottom: 8px; }
 .del-note { font-size: 12px; margin-top: 10px; }
+
+.del-callout { background: rgba(42,140,99,.15); border: 1px solid var(--green); border-radius: 8px; padding: 10px 12px; font-size: 13px; margin: 0 0 12px; line-height: 1.45; }
+.del-callout.big-batch { background: #2a1f0a; border-color: #6b4f12; color: #f5d36b; margin-top: 12px; }
+.del-callout.big-batch b { color: #ffe08a; }
+.del-video { display: block; width: min(220px, 70%); margin: 10px auto; border-radius: 14px; border: 1px solid #262928; }

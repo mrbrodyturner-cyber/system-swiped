@@ -7,8 +7,11 @@
   const genericName = (n) => /^(image|photo|img)(\s*\(\d+\))?\.\w+$/i.test(n) || /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(n);
   const fmt2 = (n) => String(n).padStart(2, '0');
   const stamp = (d) => `${d.getFullYear()}-${fmt2(d.getMonth() + 1)}-${fmt2(d.getDate())} ${fmt2(d.getHours())}:${fmt2(d.getMinutes())}:${fmt2(d.getSeconds())}`;
+  const CHUNK = 100;
+  let sentNames = new Set();
+  const remaining = () => api._rejects().filter((r) => !sentNames.has(r.name)).sort((a, b) => a.t - b.t);
   function rejectPayload() {
-    const list = api._rejects();
+    const list = remaining().slice(0, CHUNK);
     const names = new Set();
     for (const { name } of list) { names.add(name); names.add(name.replace(/\.[^.]+$/, '')); }
     // only photos shot between the first and last reject (+/- 2 min) get checked, so it's fast
@@ -19,7 +22,7 @@
   }
   const ready = () => { try { return localStorage.getItem('ss-delete-ready') === '1'; } catch { return false; } };
   function runDelete(force) {
-    if (!ready() && force !== true) { $('#delGuide').hidden = false; return; }   // shortcut has to exist first
+    if (!ready() && force !== true) { showGuide(); return; }   // shortcut has to exist first
     const { list, text } = rejectPayload();
     if (!list.length) { toast('No rejects in this batch'); return; }
     const generic = list.filter((r) => genericName(r.name)).length;
@@ -28,6 +31,8 @@
       return;
     }
     try { localStorage.setItem('ss-delete-tried', '1'); } catch {}
+    for (const r of list) sentNames.add(r.name);
+    updateDelBtn();
     location.href = `shortcuts://run-shortcut?name=${encodeURIComponent(SHORTCUT)}&input=text&text=${encodeURIComponent(text)}`;
   }
   const swap = (sel) => { const old = $(sel), n = old.cloneNode(true); old.replaceWith(n); return n; };   // drop the desktop click handlers
@@ -35,16 +40,31 @@
   delBtn.textContent = 'Delete rejects';
   setupBtn.textContent = 'Set up the Delete shortcut';
   delBtn.addEventListener('click', runDelete);
-  setupBtn.addEventListener('click', () => { $('#delGuide').hidden = false; });
+  const showGuide = () => {
+    $('#delGuide').hidden = false;
+    const v = $('#delVideo');   // demo video of adding the shortcut, if it's been published
+    if (v.hidden) { v.preload = 'auto'; v.addEventListener('loadeddata', () => { v.hidden = false; v.play().catch(() => {}); }, { once: true }); v.load(); }
+    else v.play().catch(() => {});
+  };
+  setupBtn.addEventListener('click', showGuide);
+  function updateDelBtn() {
+    const left = remaining().length, total = api._rejects().length;
+    if (!total) { delBtn.textContent = 'No rejects'; delBtn.disabled = true; return; }
+    if (!left) { delBtn.textContent = 'All rejects sent ✓'; delBtn.disabled = true; return; }
+    delBtn.disabled = false;
+    delBtn.textContent = left <= CHUNK ? `Delete ${left} reject${left === 1 ? '' : 's'}` : `Delete next ${CHUNK} (${left} left)`;
+  }
+  const _load3 = load;
+  load = async function (paths) { sentNames = new Set(); return _load3(paths); };
   const _finish = finish;
   finish = function () {
     _finish();
     const keep = state.saved, cut = state.deleted;
-    delBtn.textContent = cut ? `Delete ${cut} reject${cut === 1 ? '' : 's'}` : 'No rejects';
-    delBtn.disabled = !cut;
+    updateDelBtn();
+    moveChain.then(updateDelBtn, updateDelBtn);   // the last swipe finishes recording a moment later
     let tried = false; try { tried = localStorage.getItem('ss-delete-tried') === '1'; } catch {}
     $('#summary').textContent = `${keep} kept, ${cut} cut. Your keepers are already in Photos, nothing to save. ` +
-      (cut ? `Tap Delete to move the ${cut} reject${cut === 1 ? '' : 's'} to Recently Deleted (iPhone asks you to confirm).${tried ? '' : ' First time? Set up the Delete shortcut once (2 minutes).'}` : '');
+      (cut ? `Tap Delete to move the ${cut} reject${cut === 1 ? '' : 's'} to Recently Deleted (iPhone asks you to confirm).${cut > CHUNK ? ` Big batches go ${CHUNK} at a time: come back after each one and tap again.` : ''}${tried ? '' : ' First time? Set up the Delete shortcut once (2 minutes).'}` : '');
   };
   // one-time setup guide for the Shortcut
   const guide = document.createElement('div');
@@ -52,6 +72,7 @@
   guide.innerHTML = `<div class="modal-box del-box">
     <div class="shop-head"><h2>Turn on “Delete rejects”</h2><button class="ghost small" data-close-del>Close</button></div>
     <p class="shop-sub">iPhone only lets its <b>Shortcuts</b> app delete photos, so Swiped uses a small shortcut. Add it once. Rejects go to <b>Recently Deleted</b>, and you can recover them for 30 days.</p>
+    <div class="del-callout"><b>First time only:</b> you have to tap <b>Add Shortcut</b> before Delete can work. After that, Delete runs on its own every time.</div>
     <ol class="del-steps big">
       <li>Tap <b>Get the shortcut</b> below. The <b>Shortcuts</b> app opens (if a page opens first, tap <b>Get Shortcut</b>).</li>
       <li>Tap <b>Add Shortcut</b>.</li>
@@ -59,13 +80,16 @@
     </ol>
     <a class="primary del-get" id="delGet" href="#">Get the shortcut</a>
     <button class="ghost del-done" id="delReady">I added it, delete now</button>
-    <p class="shop-sub del-note">The first time it runs, iPhone asks to let it access your photos (tap <b>Allow</b>), and every run asks you to confirm the delete. It checks your 1,000 most recent photos for the ones you cut.</p>
+    <div class="del-callout big-batch"><b>Deleting lots of photos? Turn this on once:</b> open <b>Settings → Shortcuts → Advanced</b> and switch on <b>Allow Deleting Large Amounts of Data</b>. Without it, big deletes stall.
+      <video class="del-video" id="delVideo" src="add-shortcut.mp4" muted loop playsinline preload="none" hidden></video>
+      Really big batches still go <b>100 at a time</b>: after each run, come back and tap <b>Delete next 100</b> until it says <b>All rejects sent ✓</b>.</div>
+    <p class="shop-sub del-note">The first time it runs, iPhone asks to let it access your photos (tap <b>Allow</b>), and every run asks you to confirm the delete. It only checks photos taken during your batch, so it’s quick.</p>
     <button class="ig-skip" data-close-del>Not now</button>
   </div>`;
   document.body.appendChild(guide);
   // hand the signed file straight to the Shortcuts app (a Safari download gets mislabeled as a web page)
   // official iCloud link: opens the Add Shortcut screen on any iPhone
-  const ICLOUD = 'https://www.icloud.com/shortcuts/90d591aa1ae547dbab69205d2a6bc330';
+  const ICLOUD = 'https://www.icloud.com/shortcuts/fc0da109e7484672956d202dac0eb0e1';
   guide.querySelector('#delGet').addEventListener('click', (e) => { e.preventDefault(); location.href = ICLOUD; });
   guide.querySelectorAll('[data-close-del]').forEach((b) => b.addEventListener('click', () => { guide.hidden = true; }));
   guide.querySelector('#delReady').addEventListener('click', () => {
@@ -106,7 +130,7 @@
   vidBtn.addEventListener('click', async () => { const keys = await api.pickVideos(); if (keys.length) load(keys); });
   $('#choose').after(vidBtn, tip, folderBtn);
   const ver = document.createElement('div');
-  ver.className = 'app-ver'; ver.textContent = 'System Swiped · build 11.8-1454';
+  ver.className = 'app-ver'; ver.textContent = 'System Swiped · build 11.8-1527';
   $('.dash').appendChild(ver);
 
   // name each batch by the date the photos were taken instead of a folder
