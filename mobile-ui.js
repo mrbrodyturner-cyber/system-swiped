@@ -30,6 +30,50 @@
     if (typeof project !== 'undefined' && project) { delete project.paths; saveGame(); }
   };
 
+  // ---- first-visit install guide: only in the browser (never in the installed app), only once ----
+  (function installGuide() {
+    const standalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+    let seen = false;
+    try { seen = localStorage.getItem('ss-install-guide') === '1'; } catch {}
+    if (standalone || seen) return;
+    const ua = navigator.userAgent;
+    const iOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const notSafari = /CriOS|FxiOS|EdgiOS|OPiOS|GSA\//.test(ua);
+    const shareIcon = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const addIcon = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+    let steps;
+    if (iOS && notSafari) {
+      steps = `<div class="ig-warn">You’re in a browser that can’t install apps on iPhone. Copy this link and open it in <b>Safari</b>.</div>
+        <button class="ghost ig-copy" id="igCopy">Copy link</button>`;
+    } else if (iOS) {
+      steps = `<ol class="ig-steps">
+        <li><i>${shareIcon}</i><div><b>Tap the Share button</b><span>The square with an arrow at the bottom of Safari (top on iPad).</span></div></li>
+        <li><i>${addIcon}</i><div><b>Tap “Add to Home Screen”</b><span>Scroll down the share menu if you don’t see it.</span></div></li>
+        <li><i class="ig-num">✓</i><div><b>Tap “Add”, then open Swiped</b><span>Use the new icon on your Home Screen. It runs full screen and works offline.</span></div></li>
+      </ol>`;
+    } else {
+      steps = `<div class="ig-warn">This version is made for iPhone. Open this link in <b>Safari on your iPhone</b>, then use Share → Add to Home Screen. On a Mac, use the desktop app instead.</div>`;
+    }
+    const el = document.createElement('div');
+    el.className = 'install-guide';
+    el.setAttribute('role', 'dialog');
+    el.innerHTML = `<div class="ig-box">
+      <img class="ig-icon" src="apple-touch-icon.png" alt="">
+      <span class="eyebrow">Welcome to System Swiped</span>
+      <h2>Save it as an app</h2>
+      <p class="ig-sub">Install it once and it works like a real app: its own icon, full screen, and no internet needed.</p>
+      ${steps}
+      <button class="primary ig-go" id="igGo">Got it</button>
+      <button class="ig-skip" id="igSkip">Just use it in the browser</button>
+    </div>`;
+    document.body.appendChild(el);
+    const done = () => { try { localStorage.setItem('ss-install-guide', '1'); } catch {} el.remove(); };
+    el.querySelector('#igGo').addEventListener('click', done);
+    el.querySelector('#igSkip').addEventListener('click', done);
+    const copy = el.querySelector('#igCopy');
+    if (copy) copy.addEventListener('click', async () => { try { await navigator.clipboard.writeText(location.href); copy.textContent = 'Copied. Now open Safari'; } catch { copy.textContent = location.href; } });
+  })();
+
   // keyboard hints don't apply on a phone; keep the screen awake-ish feel by blocking rubber-band scroll on the swipe screen
   document.addEventListener('touchmove', (e) => { if (document.body.dataset.screen === 'swipe' && !e.target.closest('.modal')) e.preventDefault(); }, { passive: false });
 })();
