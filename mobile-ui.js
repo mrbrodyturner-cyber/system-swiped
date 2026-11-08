@@ -51,17 +51,22 @@
     <div class="shop-head"><h2>Turn on “Delete rejects”</h2><button class="ghost small" data-close-del>Close</button></div>
     <p class="shop-sub">iPhone only lets its <b>Shortcuts</b> app delete photos, so Swiped uses a small shortcut. Add it once. Rejects go to <b>Recently Deleted</b>, and you can recover them for 30 days.</p>
     <ol class="del-steps big">
-      <li>Tap <b>Get the shortcut</b> below. If Safari asks, tap <b>Download</b>.</li>
-      <li>Open it: tap the <b>↓ downloads</b> button in Safari’s address bar, then tap <b>Swiped-Delete</b>. <i>(Shortcuts may open by itself; skip this step if so.)</i></li>
-      <li>In Shortcuts, tap <b>Add Shortcut</b>.</li>
+      <li>Tap <b>Get the shortcut</b> below. The <b>Shortcuts</b> app opens by itself.</li>
+      <li>Tap <b>Add Shortcut</b>.</li>
       <li>Come back to Swiped and tap <b>I added it, delete now</b>.</li>
     </ol>
-    <a class="primary del-get" href="Swiped-Delete.shortcut" download="Swiped-Delete.shortcut" target="_blank" rel="noopener">Get the shortcut</a>
+    <a class="primary del-get" id="delGet" href="#">Get the shortcut</a>
     <button class="ghost del-done" id="delReady">I added it, delete now</button>
     <p class="shop-sub del-note">The first time it runs, iPhone asks to let it access your photos (tap <b>Allow</b>), and every run asks you to confirm the delete. It checks your 1,000 most recent photos for the ones you cut.</p>
     <button class="ig-skip" data-close-del>Not now</button>
   </div>`;
   document.body.appendChild(guide);
+  // hand the signed file straight to the Shortcuts app (a Safari download gets mislabeled as a web page)
+  const fileUrl = new URL('Swiped-Delete.shortcut', location.href).href;
+  guide.querySelector('#delGet').addEventListener('click', (e) => {
+    e.preventDefault();
+    location.href = `shortcuts://import-shortcut?url=${encodeURIComponent(fileUrl)}&name=${encodeURIComponent(SHORTCUT)}`;
+  });
   guide.querySelectorAll('[data-close-del]').forEach((b) => b.addEventListener('click', () => { guide.hidden = true; }));
   guide.querySelector('#delReady').addEventListener('click', () => {
     try { localStorage.setItem('ss-delete-ready', '1'); } catch {}
@@ -101,7 +106,7 @@
   vidBtn.addEventListener('click', async () => { const keys = await api.pickVideos(); if (keys.length) load(keys); });
   $('#choose').after(vidBtn, tip, folderBtn);
   const ver = document.createElement('div');
-  ver.className = 'app-ver'; ver.textContent = 'System Swiped · build 11.8-1342';
+  ver.className = 'app-ver'; ver.textContent = 'System Swiped · build 11.8-1347';
   $('.dash').appendChild(ver);
 
   // name each batch by the date the photos were taken instead of a folder
