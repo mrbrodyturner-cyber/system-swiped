@@ -52,6 +52,8 @@ After that, just tap **Delete rejects** every time. ✅
 **Deleting a LOT of photos?** Do this one time:
 **Settings → Shortcuts → Advanced → turn on “Allow Deleting Large Amounts of Data.”**
 
+Big batches delete **100 at a time**. Just tap **Delete** again until it says **All rejects sent ✓**.
+
 *Your deleted photos go to **Recently Deleted** in the Photos app. You can get them back for 30 days.*
 
 ---
