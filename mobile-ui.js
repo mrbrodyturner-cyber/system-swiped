@@ -12,7 +12,8 @@
     const times = list.map((r) => r.t).filter((t) => t && t < Date.now() - 10 * 60000);
     const from = times.length ? new Date(Math.min(...times) - 86400000) : new Date('2000-01-01T00:00:00');
     const ymd = `${from.getFullYear()}-${String(from.getMonth() + 1).padStart(2, '0')}-${String(from.getDate()).padStart(2, '0')}`;
-    return { list, text: JSON.stringify({ names: `|${[...names].join('|')}|`, from: ymd, count: list.length }) };
+    void ymd;
+    return { list, text: `|${[...names].join('|')}|` };
   }
   const ready = () => { try { return localStorage.getItem('ss-delete-ready') === '1'; } catch { return false; } };
   function runDelete(force) {
@@ -47,24 +48,17 @@
   const guide = document.createElement('div');
   guide.id = 'delGuide'; guide.className = 'modal'; guide.hidden = true;
   guide.innerHTML = `<div class="modal-box del-box">
-    <div class="shop-head"><h2>Set up “Delete rejects”</h2><button class="ghost small" data-close-del>Close</button></div>
-    <p class="shop-sub">iPhone doesn’t let web apps delete photos, but its <b>Shortcuts</b> app can. Build this once and the Delete button sends your rejects to <b>Recently Deleted</b> (you can still recover them for 30 days). <b>Experimental:</b> it matches photos by file name.</p>
-    <ol class="del-steps">
-      <li>Open the <b>Shortcuts</b> app, tap <b>+</b>, then tap the name at the top and rename it to exactly <code>Swiped Delete</code> (capital S and D, one space). If the name doesn’t match, Shortcuts says “Could not find the shortcut”.</li>
-      <li>Add <b>Get Dictionary from Input</b>. It uses <i>Shortcut Input</i> automatically.</li>
-      <li>Add <b>Get Dictionary Value</b> and set the key to <code>names</code>.</li>
-      <li>Add another <b>Get Dictionary Value</b>, key <code>from</code>. Tap its blue input and pick <b>Dictionary</b> (from step 2).</li>
-      <li>Add <b>Find Photos</b> → <b>Add Filter</b> → <b>Creation Date</b> → <b>is after</b> → pick the <code>from</code> value.</li>
-      <li>Add <b>Repeat with Each</b> and set it to <b>Photos</b>.</li>
-      <li>Inside the repeat, add <b>Get Name</b> (of <i>Repeat Item</i>).</li>
-      <li>Add <b>Text</b> and type <code>|</code>, insert the <b>Name</b> variable, then type <code>|</code> again (no spaces).</li>
-      <li>Add <b>If</b>: pick the <code>names</code> value → <b>contains</b> → the <b>Text</b> from step 8.</li>
-      <li>Inside the If, add <b>Add to Variable</b>: input <i>Repeat Item</i>, variable name <code>Rejects</code>.</li>
-      <li>Below <b>End Repeat</b>, add <b>Delete Photos</b> and set it to <code>Rejects</code>.</li>
-      <li>Done. The first run asks for Photos access: tap <b>Allow</b>. Every run asks you to confirm the delete.</li>
+    <div class="shop-head"><h2>Turn on “Delete rejects”</h2><button class="ghost small" data-close-del>Close</button></div>
+    <p class="shop-sub">iPhone only lets its <b>Shortcuts</b> app delete photos, so Swiped uses a small shortcut. Add it once. Rejects go to <b>Recently Deleted</b>, and you can recover them for 30 days.</p>
+    <ol class="del-steps big">
+      <li>Tap <b>Get the shortcut</b> below. If Safari asks, tap <b>Download</b>.</li>
+      <li>Open it: tap the <b>↓ downloads</b> button in Safari’s address bar, then tap <b>Swiped-Delete</b>. <i>(Shortcuts may open by itself; skip this step if so.)</i></li>
+      <li>In Shortcuts, tap <b>Add Shortcut</b>.</li>
+      <li>Come back to Swiped and tap <b>I added it, delete now</b>.</li>
     </ol>
-    <p class="shop-sub">After that, just tap <b>Delete rejects</b> at the end of a batch. Shortcuts opens, deletes, and you swipe back to Swiped.</p>
-    <button class="primary del-done" id="delReady">I built it, delete now</button>
+    <a class="primary del-get" href="Swiped-Delete.shortcut" download="Swiped-Delete.shortcut" target="_blank" rel="noopener">Get the shortcut</a>
+    <button class="ghost del-done" id="delReady">I added it, delete now</button>
+    <p class="shop-sub del-note">The first time it runs, iPhone asks to let it access your photos (tap <b>Allow</b>), and every run asks you to confirm the delete. It checks your 1,000 most recent photos for the ones you cut.</p>
     <button class="ig-skip" data-close-del>Not now</button>
   </div>`;
   document.body.appendChild(guide);
@@ -107,7 +101,7 @@
   vidBtn.addEventListener('click', async () => { const keys = await api.pickVideos(); if (keys.length) load(keys); });
   $('#choose').after(vidBtn, tip, folderBtn);
   const ver = document.createElement('div');
-  ver.className = 'app-ver'; ver.textContent = 'System Swiped · build 11.8-1325';
+  ver.className = 'app-ver'; ver.textContent = 'System Swiped · build 11.8-1342';
   $('.dash').appendChild(ver);
 
   // name each batch by the date the photos were taken instead of a folder
