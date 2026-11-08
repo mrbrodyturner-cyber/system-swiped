@@ -28,15 +28,22 @@
       <li>Tap <b>Choose photos…</b> → <b>Photo Library</b>, then open your album under <b>Collections</b>.</li>
       <li>Put your finger on the <b>first photo</b> and <b>slide sideways</b> across 1–2 photos. Don’t lift.</li>
       <li>Now <b>drag down</b>. Every photo you pass gets a checkmark. Hold at the bottom edge and it keeps selecting as it scrolls.</li>
-      <li>Lift your finger and tap <b>✓</b> (top right). With hundreds of photos, give iPhone a few seconds to hand them over.</li>
+      <li>Lift your finger and tap <b>✓</b> (top right). Give iPhone a few seconds to hand them over.</li>
     </ol>
+    <span class="pt-note"><b>Keep each batch to about 200–250 photos.</b> iPhone copies every full-size photo before handing it over, and much bigger selections can stall. Do a big shoot in a few batches; your XP and progress carry over.</span>
     <span class="pt-note">If it scrolls instead of selecting, you moved down too early. Start sideways first. (iPhone doesn’t give web apps a “Select All” button.)</span>`;
   // quick reminder the first few times the picker opens
   $('#choose').addEventListener('click', () => {
     let n = 0; try { n = +localStorage.getItem('ss-pick-hint') || 0; localStorage.setItem('ss-pick-hint', n + 1); } catch {}
     if (n < 3) toast('Tip: touch a photo, slide sideways, then drag down to select many at once');
   }, true);
-  $('#choose').after(tip, folderBtn);
+  const vidBtn = document.createElement('button');
+  vidBtn.className = 'ghost choose-videos'; vidBtn.textContent = 'Choose videos…';
+  vidBtn.addEventListener('click', async () => { const keys = await api.pickVideos(); if (keys.length) load(keys); });
+  $('#choose').after(vidBtn, tip, folderBtn);
+  const ver = document.createElement('div');
+  ver.className = 'app-ver'; ver.textContent = 'System Swiped · build 11.8-1258';
+  $('.dash').appendChild(ver);
 
   // name each batch by the date the photos were taken instead of a folder
   const _scan = api.scan;

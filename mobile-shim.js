@@ -54,6 +54,8 @@
     // which is what made big selections hang after tapping the checkmark. Videos are left out for the same reason.
     pickFolder: () => pick('image/heic,image/heif,image/jpeg,image/png,image/webp,image/gif,image/avif'),
     pickDir: () => pick('', true),
+    // videos get their own picker so big photo batches stay fast; listing exact types keeps the original files
+    pickVideos: () => pick('video/quicktime,video/mp4,video/x-m4v'),
     async scan(keys, pair) {
       const groups = new Map();
       for (const k of keys) {
